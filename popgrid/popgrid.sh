@@ -53,6 +53,19 @@ echo -e "$PREFIX GRIDD_PUBKEY=\"$GRIDD_PUBKEY\""
 echo -e "$PREFIX $ALPHA_LABEL Publishing gridd pubkey to alpha"
 docker-compose exec splinterd-alpha echo $GRIDD_PUBKEY > $SCRIPTS_DIR/cache/gridd.pub 
 
+GS1_CACHE=GS1_XML_3-4-1_Publication.zip
+if [ -f ${SCRIPTS_DIR}/cache/$GS1_CACHE ]; then
+  echo -e "$PREFIX GS1 xml cached. Skipping download."
+else
+  echo -e "$PREFIX GS1 xml not cached. Downloading..."
+  curl https://www.gs1.org/docs/EDI/xml/3.4.1/GS1_XML_3-4-1_Publication.zip -o ${SCRIPTS_DIR}/cache/$GS1_CACHE
+fi
+
+echo -e "$PREFIX $ALPHA_LABEL Copying GS1 xml to ${COLOR_WHITE}gridd-alpha$COLOR_NONE"
+docker exec gridd-alpha mkdir /var/cache/grid/xsd_artifact_cache
+docker cp $SCRIPTS_DIR/cache/$GS1_CACHE gridd-alpha:/var/cache/grid/xsd_artifact_cache/$GS1_CACHE
+docker-compose exec gridd-alpha grid download-xsd
+
 echo -e "$PREFIX $ALPHA_LABEL Creating circuit proposal"
 CIRCUIT_ID=$(docker-compose exec splinterd-alpha splinter circuit propose \
    --key /registry/alpha.priv \
