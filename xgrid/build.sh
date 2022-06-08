@@ -81,6 +81,8 @@ docker exec \
 echo
 echo -e "$PREFIX Creating new ${COLOR_WHITE}gridd$COLOR_NONE image";
 
+docker cp $INSTANCE_NAME:/mnt/cache/target/debian/grid-cli_${REPO_VERSION}_arm64.deb $SCRIPTS_DIR/cache/
+docker cp $INSTANCE_NAME:/mnt/cache/target/debian/grid-daemon_${REPO_VERSION}_arm64.deb $SCRIPTS_DIR/cache/
 docker build -f $SCRIPTS_DIR/gridd.dockerfile $SCRIPTS_DIR -t gridd
 
 echo -e "$PREFIX Successfully pushed new ${COLOR_WHITE}gridd$COLOR_NONE image 🎉";

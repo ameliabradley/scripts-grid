@@ -51,7 +51,7 @@ echo -e "$PREFIX GRIDD_PUBKEY=\"$GRIDD_PUBKEY\""
 # This isn't used by the script, but it could be useful if you're manually
 # executing commands
 echo -e "$PREFIX Publishing gridd pubkey to alpha"
-docker-compose exec splinterd-alpha echo $GRIDD_PUBKEY > $SCRIPTS_DIR/../cache/gridd.pub 
+docker-compose exec splinterd-alpha echo $GRIDD_PUBKEY > $SCRIPTS_DIR/cache/gridd.pub 
 
 echo -e "$PREFIX Creating circuit proposal"
 CIRCUIT_ID=$(docker-compose exec splinterd-alpha splinter circuit propose \

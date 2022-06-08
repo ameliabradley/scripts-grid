@@ -1,7 +1,7 @@
 FROM gridd-base as gridd-alpha
 
-COPY cache/target/debian/grid-cli_*.deb /tmp
-COPY cache/target/debian/grid-daemon_*.deb /tmp
+COPY cache/grid-cli_*.deb /tmp
+COPY cache/grid-daemon_*.deb /tmp
 
 RUN dpkg --unpack /tmp/grid*.deb
 
