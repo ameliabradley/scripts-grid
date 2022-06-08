@@ -1,6 +1,6 @@
 # ❌GRID
 
-Incremental cross compiler for [grid](https://github.com/hyperledger/grid) development
+Super fast incremental cross compiler for [Grid](https://github.com/hyperledger/grid) development
 
 ## Getting Started
 
@@ -20,12 +20,8 @@ alias xgrid="$SCRIPTS_GRID/xgrid/build.sh"
 
 ### Executing program
 
-* Run `xgrid [CARGO_ARGS]` from within the [grid](https://github.com/hyperledger/grid) checkout. This will build a new `gridd` docker image from your changes.
-* You can now start the example docker instance with the new version of gridd
-```
-cd $GRID_SOURCE_DIR
-cd examples/splinter
-docker-compose down # Stop if already running
-docker-compose up # Fire it up again
-```
-* Subsequent runs of `xgrid` will use the same build image and rust incremental compilation to speed gridd builds
+* Run `xgrid [CARGO_ARGS]` from within the [Grid](https://github.com/hyperledger/grid) checkout. This will build a new `gridd` docker image from your changes.
+* Use the new image by either:
+  * Running `docker down; docker up` in `examples/splinter` for a bare-bones setup
+  * Or by simply running [popgrid](../popgrid), if you want a preloaded circuit with data
+* Subsequent runs of `xgrid` will be way faster due to caching! 🎉
