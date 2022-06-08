@@ -22,7 +22,7 @@ SCRIPTS_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 CACHE_DIR=${SCRIPTS_DIR}/cache
 CARGO_HOME=${CACHE_DIR}/cargo
 CARGO_TARGET_DIR=${CACHE_DIR}/target
-REPO_VERSION=$(${SOURCE_DIR}/bin/get_version)
+REPO_VERSION=$(cat $SOURCE_DIR/VERSION)-dev
 
 CARGO_ARGS=" ${@:-"--features=experimental"}"
 

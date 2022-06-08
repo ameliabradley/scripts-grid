@@ -7,6 +7,8 @@ echo -e "$PREFIX Building daemon..."
 
 SOURCE_DIR=/mnt/grid
 
+sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${REPO_VERSION}\"/" $SOURCE_DIR/daemon/Cargo.toml
+
 cargo build --verbose --color=always --manifest-path=$SOURCE_DIR/daemon/Cargo.toml $CARGO_ARGS
 
 echo 
@@ -23,6 +25,8 @@ cargo deb --fast --no-build --deb-version $REPO_VERSION --manifest-path $SOURCE_
 
 echo 
 echo -e "$PREFIX Building cli..."
+
+sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${REPO_VERSION}\"/" $SOURCE_DIR/cli/Cargo.toml
 
 cargo build --color=always --manifest-path=$SOURCE_DIR/cli/Cargo.toml $CARGO_ARGS
 
