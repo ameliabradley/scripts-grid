@@ -156,5 +156,7 @@ do
   sleep 0.5
 done
 
-echo -e "$PREFIX Skipping po-buyer tests... (wait for PR 1203 to be merged, and add workflow to po)"
-# test_po PO-KyilV-Bbbb
+# TODO: Update script to test po-buyer steps for creating a po
+#test_po PO-KyilV-Bbbb
+
+echo -e "$PREFIX Successfully setup and tested splinter gridd 🎉"
