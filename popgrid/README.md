@@ -1,6 +1,6 @@
 # popgrid
 
-Populate a [grid](https://github.com/hyperledger/grid) database with a basic setup alpha / beta connection over splinter
+Populate a [Grid](https://github.com/hyperledger/grid) database with a basic circuit between `gridd-alpha` and `gridd-beta` over [Splinter](https://www.splinter.dev/).
 
 ## Getting Started
 
@@ -20,4 +20,17 @@ alias popgrid="$SCRIPTS_GRID/popgrid/popgrid.sh"
 
 ### Executing program
 
-* Run `popgrid` from within the [grid](https://github.com/hyperledger/grid) checkout. This will recreate the images and populate the db
+* Run `popgrid` from within the [Grid](https://github.com/hyperledger/grid) checkout
+
+### What does it do?
+
+* Sets up a circuit between `gridd-alpha` and `gridd-beta`
+* Caches the GS1 xsd
+* Creates
+  * Organization `MyOrganization`
+  * Role `po-partner`
+  * Agent with `po-partner` role
+  * Purchase order
+  * Purchase order version
+  * Role `po-buyer`
+  * Agent with `po-buyer` role
