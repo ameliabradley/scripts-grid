@@ -30,30 +30,30 @@ docker-compose up -d
 #{"status_code":400,"message":"Service ID is not present, but grid is running in splinter mode"}
 until $(curl -s http://localhost:8080/batch_statuses | grep -q grid)
 do
-  echo -e "$PREFIX $COLOR_RED[${COLOR_GREEN}α$COLOR_RED]$COLOR_NONE Waiting for rest API to return..."
+  echo -e "$PREFIX $ALPHA_LABEL Waiting for rest API to return..."
   sleep 1
 done
 
-echo -e "$PREFIX $COLOR_RED[${COLOR_GREEN}α$COLOR_RED]$COLOR_NONE Rest API ready"
+echo -e "$PREFIX $ALPHA_LABEL Rest API ready"
 
 # Do the same for Grid beta
 until $(curl -s http://localhost:8081/batch_statuses | grep -q grid)
 do
-  echo -e "$PREFIX $COLOR_RED[${COLOR_GREEN}β$COLOR_RED]$COLOR_NONE Waiting for rest API to return..."
+  echo -e "$PREFIX $BETA_LABEL Waiting for rest API to return..."
   sleep 1
 done
 
-echo -e "$PREFIX $COLOR_RED[${COLOR_GREEN}β$COLOR_RED]$COLOR_NONE Rest API ready"
+echo -e "$PREFIX $BETA_LABEL Rest API ready"
 
 GRIDD_PUBKEY=$(docker exec gridd-alpha cat /etc/grid/keys/gridd.pub | tr -d '\r')
 echo -e "$PREFIX GRIDD_PUBKEY=\"$GRIDD_PUBKEY\""
 
 # This isn't used by the script, but it could be useful if you're manually
 # executing commands
-echo -e "$PREFIX Publishing gridd pubkey to alpha"
+echo -e "$PREFIX $ALPHA_LABEL Publishing gridd pubkey to alpha"
 docker-compose exec splinterd-alpha echo $GRIDD_PUBKEY > $SCRIPTS_DIR/cache/gridd.pub 
 
-echo -e "$PREFIX Creating circuit proposal"
+echo -e "$PREFIX $ALPHA_LABEL Creating circuit proposal"
 CIRCUIT_ID=$(docker-compose exec splinterd-alpha splinter circuit propose \
    --key /registry/alpha.priv \
    --url http://splinterd-alpha:8085  \
