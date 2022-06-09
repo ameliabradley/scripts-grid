@@ -1,4 +1,6 @@
-FROM gridd-base as gridd-alpha
+FROM gridd-base
+
+ENV RUST_BACKTRACE=1
 
 COPY cache/grid-cli_*.deb /tmp
 COPY cache/grid-daemon_*.deb /tmp
