@@ -5,30 +5,28 @@ set -e
 echo
 echo -e "$PREFIX Building daemon..."
 
-SOURCE_DIR=/mnt/grid
+sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${REPO_VERSION}\"/" $BUILD_DIR/daemon/Cargo.toml
 
-sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${REPO_VERSION}\"/" $SOURCE_DIR/daemon/Cargo.toml
-
-cargo build --verbose --color=always --manifest-path=$SOURCE_DIR/daemon/Cargo.toml $CARGO_ARGS
+cargo build --verbose --color=always --manifest-path=$BUILD_DIR/daemon/Cargo.toml $CARGO_ARGS
 
 echo 
 echo -e "$PREFIX Building daemon deb..."
 
 mkdir -p /build/daemon/packaging/xsd/
-cp -r $SOURCE_DIR/sdk/src/data_validation/xml/xsd/product /build/daemon/packaging/xsd/product
+cp -r $BUILD_DIR/sdk/src/data_validation/xml/xsd/product /build/daemon/packaging/xsd/product
 
 # Copy the debug version to release so deb package creation can proceed
-mkdir -p /mnt/cache/target/release
+mkdir -p $CARGO_TARGET_DIR/release
 cp $CARGO_TARGET_DIR/debug/gridd $CARGO_TARGET_DIR/release/gridd
 
-cargo deb --fast --no-build --deb-version $REPO_VERSION --manifest-path $SOURCE_DIR/daemon/Cargo.toml
+cargo deb --fast --no-build --deb-version $REPO_VERSION --manifest-path $BUILD_DIR/daemon/Cargo.toml
 
 echo 
 echo -e "$PREFIX Building cli..."
 
-sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${REPO_VERSION}\"/" $SOURCE_DIR/cli/Cargo.toml
+sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${REPO_VERSION}\"/" $BUILD_DIR/cli/Cargo.toml
 
-cargo build --color=always --manifest-path=$SOURCE_DIR/cli/Cargo.toml $CARGO_ARGS
+cargo build --color=always --manifest-path=$BUILD_DIR/cli/Cargo.toml $CARGO_ARGS
 
 echo 
 echo -e "$PREFIX Building cli deb..."
@@ -39,4 +37,4 @@ echo -e "$PREFIX Building cli deb..."
 # This is a compromise.
 cp $CARGO_TARGET_DIR/debug/grid $CARGO_TARGET_DIR/release/grid
 
-cargo deb --fast --no-build --deb-version $REPO_VERSION --manifest-path $SOURCE_DIR/cli/Cargo.toml
+cargo deb --fast --no-build --deb-version $REPO_VERSION --manifest-path $BUILD_DIR/cli/Cargo.toml

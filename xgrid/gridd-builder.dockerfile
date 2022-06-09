@@ -22,4 +22,6 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends pandoc
 # Ran into an issue compiling the cli without this
 RUN apt-get install -y -q libc6-dev
 
+RUN mkdir /xgridbuild
+
 CMD ["bash"]
