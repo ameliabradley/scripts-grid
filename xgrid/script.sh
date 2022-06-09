@@ -26,7 +26,7 @@ echo -e "$PREFIX Building cli..."
 
 sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${REPO_VERSION}\"/" $BUILD_DIR/cli/Cargo.toml
 
-cargo build --color=always --manifest-path=$BUILD_DIR/cli/Cargo.toml $CARGO_ARGS
+cargo build --verbose --color=always --manifest-path=$BUILD_DIR/cli/Cargo.toml $CARGO_ARGS
 
 echo 
 echo -e "$PREFIX Building cli deb..."

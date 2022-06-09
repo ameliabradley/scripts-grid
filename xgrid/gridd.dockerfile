@@ -1,4 +1,4 @@
-FROM gridd-base
+FROM xgridd-base
 
 ENV RUST_BACKTRACE=1
 

@@ -29,13 +29,38 @@ echo -e "$PREFIX Building version $COLOR_WHITE$REPO_VERSION$COLOR_NONE"
 
 echo -e "$PREFIX Building with $COLOR_WHITE$CARGO_ARGS$COLOR_NONE"
 
-echo -e "$PREFIX Building ${COLOR_WHITE}grid-builder.dockerfile$COLOR_NONE";
+echo -e "$PREFIX Building ${COLOR_WHITE}gridd-builder.dockerfile$COLOR_NONE";
 
 docker build -f $SCRIPTS_DIR/gridd-builder.dockerfile $SCRIPTS_DIR -t gridd-builder
 
-docker build -f $SCRIPTS_DIR/gridd-base.dockerfile $SCRIPTS_DIR -t gridd-base
+GRID_BASE=xgridd-base
 
-INSTANCE_NAME=gridd-builder-instance
+function build_base {
+  echo -e "$PREFIX Creating $COLOR_WHITE$GRID_BASE$COLOR_NONE"
+  docker build -f $SCRIPTS_DIR/gridd-base.dockerfile $SCRIPTS_DIR -t $GRID_BASE
+}
+
+openssl sha1 $SCRIPTS_DIR/gridd-base.dockerfile > $SCRIPTS_DIR/cache/grid-base-sha1
+if [ $( docker images | grep $GRID_BASE | wc -l ) -gt 0 ]; then
+  echo -e "$PREFIX $COLOR_WHITE$GRID_BASE$COLOR_NONE already exists"
+
+  # Here we're using a hash in the root of the docker image
+  # on the off chance we change the base docker file. Ideally
+  # though, this base image continually updates with all the
+  # necessary grid dependency libraries and never ever gets rebuilt.
+  docker run $GRID_BASE cat /HASH > $SCRIPTS_DIR/cache/grid-base-image-sha1
+  if cmp --silent -- $SCRIPTS_DIR/cache/grid-base-sha1 $SCRIPTS_DIR/cache/grid-base-image-sha1; then
+    echo -e "$PREFIX $COLOR_WHITE$GRID_BASE$COLOR_NONE hash matches"
+  else
+    echo -e "$PREFIX $COLOR_WHITE$GRID_BASE$COLOR_NONE hash does not match"
+    build_base
+  fi
+else
+  echo -e "$PREFIX $COLOR_WHITE$GRID_BASE$COLOR_NONE does not exist"
+  build_base
+fi
+
+INSTANCE_NAME=xgridd-builder-instance
 if [ $( docker ps | grep $INSTANCE_NAME | wc -l ) -gt 0 ]; then
   echo -e "$PREFIX $COLOR_WHITE$INSTANCE_NAME$COLOR_NONE already exists"
 else
@@ -83,6 +108,7 @@ echo -e "$PREFIX Creating new ${COLOR_WHITE}gridd$COLOR_NONE image";
 docker cp $INSTANCE_NAME:$CARGO_TARGET_DIR/debian/grid-cli_${REPO_VERSION}_arm64.deb $SCRIPTS_DIR/cache/
 docker cp $INSTANCE_NAME:$CARGO_TARGET_DIR/debian/grid-daemon_${REPO_VERSION}_arm64.deb $SCRIPTS_DIR/cache/
 docker build -f $SCRIPTS_DIR/gridd.dockerfile $SCRIPTS_DIR -t gridd
+docker tag gridd $GRID_BASE
 
 echo -e "$PREFIX Successfully pushed new ${COLOR_WHITE}gridd$COLOR_NONE image 🎉";
 

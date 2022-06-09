@@ -11,6 +11,8 @@ RUN apt-get update \
     postgresql-client \
  && mandb
 
+COPY cache/grid-base-sha1 /HASH
+
 RUN echo ". /usr/share/bash-completion/bash_completion" >> ~/.bashrc
 
 CMD ["bash"]
