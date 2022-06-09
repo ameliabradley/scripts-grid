@@ -1,6 +1,18 @@
-# ❌GRID
+# `xgrid`
 
-Super fast incremental cross compiler for [Grid](https://github.com/hyperledger/grid) development
+Incremental compiler to create a local `gridd` docker image with a [Grid](https://github.com/hyperledger/grid) debug binary
+
+# How it works
+
+`xgrid` compiles Grid's `examples/splinter` docker image `gridd` using a persistant `grid-builder-instance` docker image in the background. The builder image caches important components to speed up subsequent builds.
+
+The cache includes:
+* Rust incremental compile information from `/target`
+* gridd linking dependencies
+
+Build output is a *debug* build with `RUST_BACKTRACE=1`
+
+`xgrid` may be faster if the local development branch significantly deviates from the grid `main` branch.
 
 ## Getting Started
 
@@ -24,4 +36,4 @@ alias xgrid="$SCRIPTS_GRID/xgrid/build.sh"
 * Use the new image by either:
   * Running `docker down; docker up` in `examples/splinter` for a bare-bones setup
   * Or by simply running [popgrid](../popgrid), if you want a preloaded circuit with data
-* Subsequent runs of `xgrid` will be way faster due to caching! 🎉
+* Subsequent runs of `xgrid` will be faster due to caching

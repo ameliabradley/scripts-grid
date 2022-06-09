@@ -1,4 +1,4 @@
-# popgrid
+# `popgrid`
 
 Populate a [Grid](https://github.com/hyperledger/grid) database with a basic circuit between `gridd-alpha` and `gridd-beta` over [Splinter](https://www.splinter.dev/).
 
