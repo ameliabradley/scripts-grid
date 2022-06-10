@@ -78,9 +78,13 @@ do
     continue;
   fi
 
+  if [ -d $file ]; then
+    file=$file/.
+  fi
+
   DEST=$BUILD_DIR/$BASENAME
   echo -e "$PREFIX Copying $COLOR_WHITE$BASENAME$COLOR_NONE to $DEST"
-  docker cp $file $INSTANCE_NAME:$BUILD_DIR/$BASENAME
+  docker cp $file $INSTANCE_NAME:$DEST
 done
 
 echo
