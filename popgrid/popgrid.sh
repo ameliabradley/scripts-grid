@@ -66,18 +66,40 @@ docker exec gridd-alpha mkdir /var/cache/grid/xsd_artifact_cache
 docker cp $SCRIPTS_DIR/cache/$GS1_CACHE gridd-alpha:/var/cache/grid/xsd_artifact_cache/$GS1_CACHE
 docker-compose exec gridd-alpha grid download-xsd
 
+if [ "$(docker-compose exec -T splinterd-alpha splinter circuit propose --help | grep -c auth-type)" -ge 1 ]; then
+   AUTH_TYPE=" --auth-type trust"
+else
+   AUTH_TYPE=
+fi
+
+function exit_on_fail() {
+  echo -e "$PREFIX Running $@"
+  if RESULT=$($@ 2>&1); then
+    :
+  else
+    echo -e "$RESULT"
+    echo -e "$PREFIX Bailing due to error"
+    exit
+  fi
+}
+
 echo -e "$PREFIX $ALPHA_LABEL Creating circuit proposal"
-CIRCUIT_ID=$(docker-compose exec splinterd-alpha splinter circuit propose \
+exit_on_fail docker-compose exec -T splinterd-alpha splinter circuit propose \
    --key /registry/alpha.priv \
    --url http://splinterd-alpha:8085  \
    --node alpha-node-000::tcps://splinterd-alpha:8044 \
    --node beta-node-000::tcps://splinterd-beta:8044 \
    --service gsAA::alpha-node-000 \
    --service gsBB::beta-node-000 \
-   --service-type *::scabbard \
+   --service-type "*::scabbard" \
    --management grid \
-   --service-arg *::admin_keys=$GRIDD_PUBKEY \
-   --service-peer-group gsAA,gsBB | awk '/Circuit/{print $2}' | tr -d '\r')
+   $AUTH_TYPE \
+   --service-arg "*::admin_keys=$GRIDD_PUBKEY" \
+   --service-peer-group gsAA,gsBB
+
+# Looking for the line in this format
+# "Circuit: tmuVH-nQ1ab"
+CIRCUIT_ID=$(echo "$RESULT" | awk '/Circuit/{print $2; exit}' | tr -d '\r')
 
 echo -e "$PREFIX CIRCUIT_ID=\"$CIRCUIT_ID\""
 

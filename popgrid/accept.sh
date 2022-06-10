@@ -6,15 +6,26 @@ source $SCRIPTS_DIR/shared.sh
 cd $SOURCE_DIR
 cd $COMPOSE_DIR
 
+# For newer versions of splinter
+#ALPHA_ARGS=" --key /registry/alpha.priv --url http://127.0.0.1:8085"
+#BETA_ARGS=" --key /registry/beta.priv --url http://127.0.0.1:8085"
+
+ALPHA_ARGS=""
+BETA_ARGS=""
+
 ORG_ID=myorg
 ORG_FULLNAME=MyOrganization
 ORG_ALTID=gs1_company_prefix:013600
 
 CIRCUIT_ID=$1
 
-until $(docker-compose exec splinterd-beta splinter circuit proposals | grep -q "$CIRCUIT_ID")
+function check_proposal() {
+  exit_on_fail docker-compose exec splinterd-beta splinter circuit proposals $BETA_ARGS
+  echo "$RESULT" | grep -q "$CIRCUIT_ID"
+}
+until check_proposal
 do
-  echo -e "$PREFIX $BETA_LABEL Waiting for beta to acknowledge proposal..."
+  echo -e "$PREFIX $BETA_LABEL Waiting for proposal acknowledgment of $COLOR_WHITE$CIRCUIT_ID$COLOR_NONE..."
   sleep 0.1
 done
 
@@ -36,7 +47,15 @@ echo -e "$PREFIX Successfully setup circuit $CIRCUIT_ID"
 # grid_purchase_order 2        03e3d5fcab7f7040a7449dfc578a126cd5a8acc638826eafc64e053f2d64294421 
 # grid_product        2        03e3d5fcab7f7040a7449dfc578a126cd5a8acc638826eafc64e053f2d64294421 
 # grid_schema         2        03e3d5fcab7f7040a7449dfc578a126cd5a8acc638826eafc64e053f2d64294421
-until [ $(docker-compose exec scabbard-cli-alpha scabbard contract list -U http://splinterd-alpha:8085 --service-id $CIRCUIT_ID::gsAA | wc -l) -gt "5" ]
+docker-compose exec splinterd-beta cat /registry/alpha.priv > ~/key
+docker cp ~/key scabbard-cli-alpha:/key
+function check_contracts() {
+  # TODO: Add --key after splinter is upgraded and the docker-compose
+  # gets updated to contain a key
+  exit_on_fail docker-compose exec scabbard-cli-alpha scabbard contract list -U http://splinterd-alpha:8085 --service-id $CIRCUIT_ID::gsAA
+  RESULT=$(echo "$RESULT" | wc -l)
+}
+until check_contracts; [ $RESULT -gt "5" ]
 do
   echo -e "$PREFIX Waiting for contracts to be setup..."
   sleep 1
@@ -52,7 +71,11 @@ docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsAA -e GRID_DAEMON_KEY=alph
   $ORG_ID $ORG_FULLNAME \
   --alternate-ids $ORG_ALTID
 
-until $(docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid organization list | grep -q $ORG_ID)
+function check_org() {
+  exit_on_fail docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid organization list
+  echo "$RESULT" | grep -q $ORG_ID
+}
+until check_org; echo "$RESULT"
 do
   echo -e "$PREFIX $BETA_LABEL Waiting for beta to acknowledge organization..."
   sleep 0.5
@@ -69,7 +92,11 @@ docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsAA -e GRID_DAEMON_KEY=alph
  --permissions "po::partner"
  #--permissions "po::buyer,po::seller,po::partner,po::draft"
 
-until $(docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid role list $ORG_ID | grep -q po-partner)
+function check_partner_role_added() {
+  exit_on_fail docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid role list $ORG_ID
+  echo "$RESULT" | grep -q po-partner
+}
+until check_partner_role_added; echo "$RESULT"
 do
   echo -e "$PREFIX $BETA_LABEL Waiting for role to be added..."
   sleep 0.5
@@ -83,7 +110,11 @@ myorg $AGENT_PUBKEY \
 --role admin \
 --role po-partner 
 
-until $(docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid agent list | grep -q po-partner)
+function check_partner_role_given() {
+  exit_on_fail docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid agent list
+  echo "$RESULT" | grep -q po-partner
+}
+until check_partner_role_given; echo $RESULT
 do
   echo -e "$PREFIX $BETA_LABEL Waiting for agent to be given role..."
   sleep 0.5
@@ -136,7 +167,11 @@ docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsAA -e GRID_DAEMON_KEY=alph
  --allowed-orgs myorg \
  --permissions "po::buyer"
 
-until $(docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid role list $ORG_ID | grep -q po-buyer)
+function check_buyer_role_added() {
+  exit_on_fail docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid role list $ORG_ID
+  echo "$RESULT" | grep -q po-buyer
+}
+until check_buyer_role_added; echo $RESULT
 do
   echo -e "$PREFIX $BETA_LABEL Waiting for role to be added..."
   sleep 0.5
@@ -150,7 +185,11 @@ myorg $AGENT_PUBKEY \
 --role admin \
 --role po-buyer 
 
-until $(docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid agent list | grep -q po-buyer)
+function check_buyer_role_given() {
+  exit_on_fail docker-compose exec -e GRID_SERVICE_ID=$CIRCUIT_ID::gsBB gridd-beta grid agent list
+  echo "$RESULT" | grep -q po-buyer
+}
+until check_buyer_role_given; echo $RESULT
 do
   echo -e "$PREFIX $BETA_LABEL Waiting for agent to be given role..."
   sleep 0.5
